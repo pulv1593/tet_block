@@ -18,7 +18,7 @@ const ctx = canvas.getContext("2d")!;
 
 const board = new Board();
 const renderer = new Renderer(ctx);
-const piece = new Piece(TetrominoType.T);
+const piece = new Piece(TetrominoType.I);
 
 const input = new InputManager(board, piece);
 input.initialize();

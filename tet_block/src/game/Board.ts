@@ -1,3 +1,4 @@
+import { TETROMINO_SHAPES } from "../types/Tetromino";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "./Constants";
 import { Piece } from "./Piece";
 
@@ -14,9 +15,10 @@ export class Board {
     isValidPosition(
         piece: Piece,
         newX: number,
-        newY: number
+        newY: number,
+        rotation: number = piece.rotation
     ):boolean {
-        const shape = piece.getShape();
+        const shape = TETROMINO_SHAPES[piece.type][rotation];
         for (let y = 0; y < shape.length; y++) {
             for (let x = 0; x < shape[y].length; x++) {
                 if (shape[y][x] === 0) {

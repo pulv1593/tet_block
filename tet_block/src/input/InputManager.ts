@@ -1,5 +1,6 @@
 import { Board } from "../game/Board";
 import { Piece } from "../game/Piece";
+import { RotateDirection, Rotation } from "../srs/Rotation";
 
 export class InputManager {
     private board: Board;
@@ -47,7 +48,18 @@ export class InputManager {
                     }
                     break;
                 case "KeyX":
-                    this.piece.rotateCW();
+                    Rotation.rotate(
+                        this.board,
+                        this.piece,
+                        RotateDirection.CW
+                    );
+                    break;
+                case "KeyZ":
+                    Rotation.rotate(
+                        this.board,
+                        this.piece,
+                        RotateDirection.CCW
+                    );
                     break;
             }
         })
