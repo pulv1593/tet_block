@@ -235,8 +235,6 @@ export const L_SHAPE: RotationStates = [
     ]
 ];
 
-
-
 export const TETROMINO_SHAPES: Record<TetrominoType, RotationStates> = {
     I: I_SHAPE,
     O: O_SHAPE,

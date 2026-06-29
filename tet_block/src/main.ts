@@ -7,6 +7,7 @@ import {
 } from "./game/Constants";
 import { Piece } from "./game/Piece";
 import { TetrominoType } from "./types/Tetromino";
+import { InputManager } from "./input/InputManager";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 
@@ -18,6 +19,9 @@ const ctx = canvas.getContext("2d")!;
 const board = new Board();
 const renderer = new Renderer(ctx);
 const piece = new Piece(TetrominoType.T);
+
+const input = new InputManager(board, piece);
+input.initialize();
 
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -31,8 +35,10 @@ function gameLoop() {
 
 gameLoop();
 
-window.addEventListener("keydown", (e) => {
-    if (e.code === "KeyX") {
-        piece.rotateCW();
-    }
-});
+console.log(
+    board.isValidPosition(
+        piece,
+        piece.x,
+        piece.y
+    )
+);
