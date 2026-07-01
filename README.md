@@ -1,6 +1,7 @@
 # tet_block
 Inspired by TETR.IO
 
+```text
 프로젝트 구조
 src
 ├── game
@@ -22,3 +23,4 @@ src
 │   └── Tetromino.ts
 │
 └── main.ts
+```
