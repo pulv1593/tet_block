@@ -1,4 +1,5 @@
 import { InputManager } from "../input/InputManager";
+import { GameSettings } from "../settings/GameSettings";
 import { Bag } from "./bag";
 import { Board } from "./Board";
 import { GRAVITY_DELAY, LOCK_DELAY } from "./Constants";
@@ -8,6 +9,7 @@ export class Game {
 
     readonly board: Board;
     readonly input: InputManager;
+    readonly settings: GameSettings;
 
     currentPiece: Piece;
 
@@ -38,6 +40,8 @@ export class Game {
             new InputManager(this);
 
         this.input.initialize();
+
+        this.settings = new GameSettings();
     }
 
     update(deltaTime: number):void {
@@ -99,7 +103,11 @@ export class Game {
         }
 
         this.spawn();
-    }
+    };
+
+    public lockCurrentPiece():void {
+        this.merge();
+    };
 
     //Spawn
     private spawn(): void {
@@ -121,5 +129,22 @@ export class Game {
 
     public isGameOver(): boolean {
         return this.gameOver;
+    }
+
+    //Ghost Piece 함수
+    public getLandingY(): number {
+        let landingY = this.currentPiece.y;
+
+        while (
+            this.board.isValidPosition(
+                this.currentPiece,
+                this.currentPiece.x,
+                landingY + 1
+            )
+        ) {
+            landingY++;
+        }
+
+        return landingY;
     }
 }

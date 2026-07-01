@@ -13,7 +13,6 @@ export class Renderer {
     }
 
     render(game: Game): void {
-
         this.ctx.clearRect(
             0,
             0,
@@ -22,6 +21,14 @@ export class Renderer {
         );
 
         this.drawBoard(game.board);
+
+        if (game.settings.showGhostPiece) {
+            this.drawGhost(
+                game.currentPiece,
+                game.getLandingY()
+            );
+        }
+
         this.drawPiece(game.currentPiece);
     }
 
@@ -95,5 +102,36 @@ export class Renderer {
             CELL_SIZE
         );
 
+    }
+
+    //Ghost Piece draw function
+    private drawGhost(
+        piece: Piece,
+        landingY: number
+    ): void {
+
+        const shape = piece.getShape();
+
+        this.ctx.globalAlpha = 0.3;
+
+        for (let y = 0; y < shape.length; y++) {
+
+            for (let x = 0; x < shape[y].length; x++) {
+
+                if (shape[y][x] === 0) {
+                    continue;
+                }
+
+                this.drawCell(
+                    piece.x + x,
+                    landingY + y,
+                    TETROMINO_COLORS[piece.id]
+                );
+
+            }
+
+        }
+
+        this.ctx.globalAlpha = 1;
     }
 }

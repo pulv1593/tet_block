@@ -61,6 +61,10 @@ export class InputManager {
                         RotateDirection.CCW
                     );
                     break;
+                case "Space":
+                    this.game.currentPiece.y = this.game.getLandingY();
+                    this.game.lockCurrentPiece();
+                    break;
             }
         })
     }
