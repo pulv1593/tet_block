@@ -1,14 +1,11 @@
-import { Board } from "../game/Board";
-import { Piece } from "../game/Piece";
+import { Game } from "../game/Game";
 import { RotateDirection, Rotation } from "../srs/Rotation";
 
 export class InputManager {
-    private board: Board;
-    private piece: Piece;
+    private game: Game;
 
-    constructor(board: Board, piece: Piece) {
-        this.board = board;
-        this.piece = piece;
+    constructor(game: Game) {
+        this.game = game;
     }
 
     initialize() {
@@ -16,48 +13,48 @@ export class InputManager {
             switch (e.code) {
                 case "ArrowLeft":
                     if (
-                        this.board.isValidPosition(
-                            this.piece,
-                            this.piece.x - 1,
-                            this.piece.y
+                        this.game.board.isValidPosition(
+                            this.game.currentPiece,
+                            this.game.currentPiece.x - 1,
+                            this.game.currentPiece.y
                         )
                     ) {
-                        this.piece.x--;
+                        this.game.currentPiece.x--;
                     }
                     break;
                 case "ArrowRight":
                     if (
-                        this.board.isValidPosition(
-                            this.piece,
-                            this.piece.x + 1,
-                            this.piece.y
+                        this.game.board.isValidPosition(
+                            this.game.currentPiece,
+                            this.game.currentPiece.x + 1,
+                            this.game.currentPiece.y
                         )
                     )   {
-                        this.piece.x++;
+                        this.game.currentPiece.x++;
                     }
                     break;
                 case "ArrowDown":
                     if (
-                        this.board.isValidPosition(
-                            this.piece,
-                            this.piece.x,
-                            this.piece.y + 1
+                        this.game.board.isValidPosition(
+                            this.game.currentPiece,
+                            this.game.currentPiece.x,
+                            this.game.currentPiece.y + 1
                         )
                     ) {
-                        this.piece.y++;
+                        this.game.currentPiece.y++;
                     }
                     break;
                 case "KeyX":
                     Rotation.rotate(
-                        this.board,
-                        this.piece,
+                        this.game.board,
+                        this.game.currentPiece,
                         RotateDirection.CW
                     );
                     break;
                 case "KeyZ":
                     Rotation.rotate(
-                        this.board,
-                        this.piece,
+                        this.game.board,
+                        this.game.currentPiece,
                         RotateDirection.CCW
                     );
                     break;

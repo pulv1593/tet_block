@@ -1,44 +1,36 @@
-import { Board } from "./game/Board";
+import { Game } from "./game/Game";
 import { Renderer } from "./game/Renderer";
 import {
     BOARD_WIDTH,
     BOARD_HEIGHT,
     CELL_SIZE
 } from "./game/Constants";
-import { Piece } from "./game/Piece";
-import { TetrominoType } from "./types/Tetromino";
-import { InputManager } from "./input/InputManager";
 
-const canvas = document.getElementById("game") as HTMLCanvasElement;
+const canvas =
+    document.getElementById("game") as HTMLCanvasElement;
 
 canvas.width = BOARD_WIDTH * CELL_SIZE;
 canvas.height = BOARD_HEIGHT * CELL_SIZE;
 
 const ctx = canvas.getContext("2d")!;
 
-const board = new Board();
+const game = new Game();
+
 const renderer = new Renderer(ctx);
-const piece = new Piece(TetrominoType.I);
 
-const input = new InputManager(board, piece);
-input.initialize();
+let lastTime = performance.now();
 
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function gameLoop(currentTime: number) {
 
-    renderer.drawBoard(board);
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
 
-    renderer.drawPiece(piece);
+    game.update(deltaTime);
+
+    renderer.render(game);
 
     requestAnimationFrame(gameLoop);
+
 }
 
-gameLoop();
-
-console.log(
-    board.isValidPosition(
-        piece,
-        piece.x,
-        piece.y
-    )
-);
+requestAnimationFrame(gameLoop);
