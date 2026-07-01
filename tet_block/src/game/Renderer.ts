@@ -1,10 +1,7 @@
 import { CELL_SIZE } from "./Constants";
 import { Board } from "./Board";
 import { Piece } from "./Piece";
-
-import {
-    TETROMINO_SHAPES
-} from "../types/Tetromino";
+import { Game } from "./Game";
 
 export class Renderer {
 
@@ -14,6 +11,18 @@ export class Renderer {
         this.ctx = ctx;
     }
 
+    render(game: Game): void {
+
+        this.ctx.clearRect(
+            0,
+            0,
+            this.ctx.canvas.width,
+            this.ctx.canvas.height
+        );
+
+        this.drawBoard(game.board);
+        this.drawPiece(game.currentPiece);
+    }
 
     drawBoard(board: Board) {
 
@@ -34,8 +43,7 @@ export class Renderer {
 
     drawPiece(piece: Piece) {
 
-        const shape =
-            TETROMINO_SHAPES[piece.type][piece.rotation];
+        const shape = piece.getShape();
 
         this.ctx.fillStyle = "#b000ff";
 
