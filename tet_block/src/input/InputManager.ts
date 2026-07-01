@@ -10,6 +10,9 @@ export class InputManager {
 
     initialize() {
         window.addEventListener("keydown", (e)=> {
+            if (this.game.isGameOver()) {
+                return;
+            }
             switch (e.code) {
                 case "ArrowLeft":
                     if (

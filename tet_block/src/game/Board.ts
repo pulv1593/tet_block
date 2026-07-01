@@ -54,4 +54,66 @@ export class Board {
         }
         return true;
     }
+
+    public mergePiece(piece: Piece): void {
+        const shape = piece.getShape();
+
+        for (let y = 0; y < shape.length; y++) {
+
+            for (let x = 0; x < shape[y].length; x++) {
+
+                if (shape[y][x] === 0) {
+                    continue;
+                }
+
+                this.grid[
+                    piece.y + y
+                ][
+                    piece.x + x
+                ] = 1;
+
+            }
+
+        }
+
+    }
+
+    private isLineFull(y: number) :boolean {
+        for (let x = 0; x < this.grid[y].length; x++) {
+            if (this.grid[y][x] === 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private removeLine(y: number): void {
+        for (let row = y; row > 0; row--) {
+
+            this.grid[row] = [...this.grid[row - 1]];
+
+        }
+
+        this.grid[0] =
+            new Array(this.grid[0].length).fill(0);
+    }
+
+    public clearLines(): number {
+        let cleared = 0;
+
+        for (let y = this.grid.length - 1; y >= 0; y--) {
+
+            if (!this.isLineFull(y)) {
+                continue;
+            }
+
+            this.removeLine(y);
+
+            cleared++;
+
+            y++;
+        }
+
+        return cleared;
+    }
 }

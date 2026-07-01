@@ -24,7 +24,7 @@ export class Game {
     private bag : Bag;
 
     //gameover 변수
-    private gameover = false;
+    private gameOver = false;
 
     constructor() {
 
@@ -41,7 +41,7 @@ export class Game {
     }
 
     update(deltaTime: number):void {
-        if(this.gameover) {
+        if(this.gameOver) {
             return;
         };
 
@@ -85,24 +85,18 @@ export class Game {
 
     //Merge
     private merge():void{
-        const shape = this.currentPiece.getShape();
-
-        for (let y = 0; y < shape.length; y++){
-            for(let x = 0; x < shape[y].length; x++){
-                if (shape[y][x] === 0) {
-                    continue;
-                }
-
-                this.board.grid[
-                    this.currentPiece.y + y
-                ][
-                    this.currentPiece.x + x
-                ] = 1;
-            }
-        }
+        this.board.mergePiece(
+            this.currentPiece
+        );
 
         this.isGrounded = false;
         this.lockTimer = 0;
+
+        const lines = this.board.clearLines();
+
+        if (lines > 0) {
+            console.log(`${lines} line(s) cleared`);
+        }
 
         this.spawn();
     }
@@ -120,8 +114,12 @@ export class Game {
             this.currentPiece.y
             )
         ) {
-            this.gameover = true;
+            this.gameOver = true;
             console.log("GAME OVER");
         }
+    }
+
+    public isGameOver(): boolean {
+        return this.gameOver;
     }
 }
