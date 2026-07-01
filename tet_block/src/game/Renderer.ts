@@ -24,13 +24,15 @@ export class Renderer {
         this.drawPiece(game.currentPiece);
     }
 
-    drawBoard(board: Board) {
-
+    private drawBoard(board: Board) {
         for (let y = 0; y < board.grid.length; y++) {
+
             for (let x = 0; x < board.grid[y].length; x++) {
+                if(board.grid[y][x] !== 0){
+                    this.drawCell(x, y, "#b000ff");
+                }
 
                 this.ctx.strokeStyle = "#333";
-
                 this.ctx.strokeRect(
                     x * CELL_SIZE,
                     y * CELL_SIZE,
@@ -41,11 +43,9 @@ export class Renderer {
         }
     }
 
-    drawPiece(piece: Piece) {
+    private drawPiece(piece: Piece) {
 
         const shape = piece.getShape();
-
-        this.ctx.fillStyle = "#b000ff";
 
         for (let y = 0; y < shape.length; y++) {
             for (let x = 0; x < shape[y].length; x++) {
@@ -54,22 +54,38 @@ export class Renderer {
                     continue;
                 }
 
-                this.ctx.fillRect(
-                    (piece.x + x) * CELL_SIZE,
-                    (piece.y + y) * CELL_SIZE,
-                    CELL_SIZE,
-                    CELL_SIZE
-                );
-
-                this.ctx.strokeStyle = "#000";
-
-                this.ctx.strokeRect(
-                    (piece.x + x) * CELL_SIZE,
-                    (piece.y + y) * CELL_SIZE,
-                    CELL_SIZE,
-                    CELL_SIZE
+                this.drawCell(
+                    piece.x + x,
+                    piece.y + y,
+                    "#b000ff"
                 );
             }
         }
+    }
+
+    private drawCell(
+        x: number,
+        y: number,
+        color: string
+    ): void {
+
+        this.ctx.fillStyle = color;
+
+        this.ctx.fillRect(
+            x * CELL_SIZE,
+            y * CELL_SIZE,
+            CELL_SIZE,
+            CELL_SIZE
+        );
+
+        this.ctx.strokeStyle = "#000";
+
+        this.ctx.strokeRect(
+            x * CELL_SIZE,
+            y * CELL_SIZE,
+            CELL_SIZE,
+            CELL_SIZE
+        );
+
     }
 }

@@ -5,3 +5,6 @@ export const CELL_SIZE = 32;
 
 //Gravity 상수.
 export const GRAVITY_DELAY = 1000;
+
+//lockDelay 상수
+export const LOCK_DELAY = 500;

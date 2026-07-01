@@ -1,7 +1,7 @@
 import { InputManager } from "../input/InputManager";
 import { TetrominoType } from "../types/Tetromino";
 import { Board } from "./Board";
-import { GRAVITY_DELAY } from "./Constants";
+import { GRAVITY_DELAY, LOCK_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 
 export class Game {
@@ -11,15 +11,21 @@ export class Game {
 
     currentPiece: Piece;
 
+    //gravity 변수
     private gravityTimer = 0;
     private gravityDelay = GRAVITY_DELAY;
+
+    //lock delay 변수
+    private lockTimer = 0;
+    private readonly lockDelay = LOCK_DELAY;
+    private isGrounded = false;
 
     constructor() {
 
         this.board = new Board();
 
         this.currentPiece =
-            new Piece(TetrominoType.I);
+            new Piece(TetrominoType.T);
 
         this.input =
             new InputManager(this);
@@ -35,13 +41,21 @@ export class Game {
 
             this.gravityTimer -= this.gravityDelay;
 
-            this.softDrop();
-
+            this.tryMoveDown();
         }
 
+        //lock Delay
+        if(this.isGrounded) {
+            this.lockTimer += deltaTime;
+            if(this.lockTimer >= this.lockDelay){
+                this.merge();
+            }
+        } else {
+            this.lockTimer = 0;
+        }
     }
-
-    private softDrop() {
+    //1칸 down
+    private tryMoveDown():boolean {
 
         if (
             this.board.isValidPosition(
@@ -52,15 +66,39 @@ export class Game {
         ) {
 
             this.currentPiece.move(0,1);
-            return;
+            this.isGrounded = false;
+            return true;
         }
-
+        this.isGrounded = true;
+        return false;
     }
 
+    //Merge
+    private merge():void{
+        const shape = this.currentPiece.getShape();
+
+        for (let y = 0; y < shape.length; y++){
+            for(let x = 0; x < shape[y].length; x++){
+                if (shape[y][x] === 0) {
+                    continue;
+                }
+
+                this.board.grid[
+                    this.currentPiece.y + y
+                ][
+                    this.currentPiece.x + x
+                ] = 1;
+            }
+        }
+        console.log("MERGE");
+
+        this.currentPiece =
+            new Piece(TetrominoType.I);
+
+        this.isGrounded = false;
+        this.lockTimer = 0;
+    }
 }
-//현재 mino
-//Gravity
-//Lock Delay
+
 //Spawn
-//Merge
 //7-bag
