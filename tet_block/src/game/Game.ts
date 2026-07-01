@@ -1,5 +1,5 @@
 import { InputManager } from "../input/InputManager";
-import { TetrominoType } from "../types/Tetromino";
+import { Bag } from "./bag";
 import { Board } from "./Board";
 import { GRAVITY_DELAY, LOCK_DELAY } from "./Constants";
 import { Piece } from "./Piece";
@@ -20,12 +20,19 @@ export class Game {
     private readonly lockDelay = LOCK_DELAY;
     private isGrounded = false;
 
+    //7-bag 변수
+    private bag : Bag;
+
+    //gameover 변수
+    private gameover = false;
+
     constructor() {
 
         this.board = new Board();
 
+        this.bag = new Bag();
         this.currentPiece =
-            new Piece(TetrominoType.T);
+            new Piece(this.bag.next());
 
         this.input =
             new InputManager(this);
@@ -34,6 +41,9 @@ export class Game {
     }
 
     update(deltaTime: number):void {
+        if(this.gameover) {
+            return;
+        };
 
         this.gravityTimer += deltaTime;
 
@@ -90,15 +100,28 @@ export class Game {
                 ] = 1;
             }
         }
-        console.log("MERGE");
-
-        this.currentPiece =
-            new Piece(TetrominoType.I);
 
         this.isGrounded = false;
         this.lockTimer = 0;
+
+        this.spawn();
+    }
+
+    //Spawn
+    private spawn(): void {
+        this.currentPiece =
+            new Piece(
+                this.bag.next()
+            );
+        if (
+        !this.board.isValidPosition(
+            this.currentPiece,
+            this.currentPiece.x,
+            this.currentPiece.y
+            )
+        ) {
+            this.gameover = true;
+            console.log("GAME OVER");
+        }
     }
 }
-
-//Spawn
-//7-bag
