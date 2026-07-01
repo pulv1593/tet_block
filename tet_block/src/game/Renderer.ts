@@ -2,6 +2,7 @@ import { CELL_SIZE } from "./Constants";
 import { Board } from "./Board";
 import { Piece } from "./Piece";
 import { Game } from "./Game";
+import { TETROMINO_COLORS } from "../types/Tetromino";
 
 export class Renderer {
 
@@ -28,8 +29,15 @@ export class Renderer {
         for (let y = 0; y < board.grid.length; y++) {
 
             for (let x = 0; x < board.grid[y].length; x++) {
-                if(board.grid[y][x] !== 0){
-                    this.drawCell(x, y, "#b000ff");
+
+                const id = board.grid[y][x];
+
+                if (id !== 0) {
+                    this.drawCell(
+                        x,
+                        y,
+                        TETROMINO_COLORS[id]
+                    );
                 }
 
                 this.ctx.strokeStyle = "#333";
@@ -57,7 +65,7 @@ export class Renderer {
                 this.drawCell(
                     piece.x + x,
                     piece.y + y,
-                    "#b000ff"
+                    TETROMINO_COLORS[piece.id]
                 );
             }
         }

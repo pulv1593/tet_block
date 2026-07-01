@@ -2,6 +2,7 @@ import {
     TetrominoType,
     TETROMINO_SHAPES
 } from "../types/Tetromino";
+import { TETROMINO_IDS } from "../types/Tetromino";
 
 export class Piece {
 
@@ -30,4 +31,7 @@ export class Piece {
         this.x += dx;
         this.y += dy;
     }
+    get id():number {
+        return TETROMINO_IDS[this.type];
+    };
 }

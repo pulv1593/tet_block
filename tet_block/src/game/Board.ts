@@ -70,7 +70,7 @@ export class Board {
                     piece.y + y
                 ][
                     piece.x + x
-                ] = 1;
+                ] = piece.id;
 
             }
 

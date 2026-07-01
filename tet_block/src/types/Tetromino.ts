@@ -243,4 +243,27 @@ export const TETROMINO_SHAPES: Record<TetrominoType, RotationStates> = {
     Z: Z_SHAPE,
     J: J_SHAPE,
     L: L_SHAPE,
-}
+};
+
+//미노 색상 관리
+export const TETROMINO_IDS: Record<TetrominoType, number> = {
+    I: 1,
+    O: 2,
+    T: 3,
+    S: 4,
+    Z: 5,
+    J: 6,
+    L: 7,
+};
+
+export const TETROMINO_COLORS: Record<number, string> = {
+    0: "#000000",
+
+    1: "#00FFFF", // I
+    2: "#FFFF00", // O
+    3: "#AA00FF", // T
+    4: "#00FF00", // S
+    5: "#FF0000", // Z
+    6: "#0040FF", // J
+    7: "#FF8800", // L
+};
