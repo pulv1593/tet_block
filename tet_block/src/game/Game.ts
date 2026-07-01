@@ -1,6 +1,7 @@
 import { InputManager } from "../input/InputManager";
 import { TetrominoType } from "../types/Tetromino";
 import { Board } from "./Board";
+import { GRAVITY_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 
 export class Game {
@@ -11,7 +12,7 @@ export class Game {
     currentPiece: Piece;
 
     private gravityTimer = 0;
-    private gravityDelay = 1000;
+    private gravityDelay = GRAVITY_DELAY;
 
     constructor() {
 
@@ -26,13 +27,13 @@ export class Game {
         this.input.initialize();
     }
 
-    update(deltaTime: number) {
+    update(deltaTime: number):void {
 
         this.gravityTimer += deltaTime;
 
-        if (this.gravityTimer >= this.gravityDelay) {
+        while (this.gravityTimer >= this.gravityDelay) {
 
-            this.gravityTimer = 0;
+            this.gravityTimer -= this.gravityDelay;
 
             this.softDrop();
 
@@ -50,8 +51,8 @@ export class Game {
             )
         ) {
 
-            this.currentPiece.y++;
-
+            this.currentPiece.move(0,1);
+            return;
         }
 
     }
