@@ -3,13 +3,14 @@ import { Renderer } from "./game/Renderer";
 import {
     BOARD_WIDTH,
     BOARD_HEIGHT,
-    CELL_SIZE
+    CELL_SIZE,
+    SIDE_PANEL_WIDTH
 } from "./game/Constants";
 
 const canvas =
     document.getElementById("game") as HTMLCanvasElement;
 
-canvas.width = BOARD_WIDTH * CELL_SIZE;
+canvas.width = BOARD_WIDTH * CELL_SIZE + SIDE_PANEL_WIDTH;
 canvas.height = BOARD_HEIGHT * CELL_SIZE;
 
 const ctx = canvas.getContext("2d")!;

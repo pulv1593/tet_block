@@ -3,18 +3,23 @@ import { TetrominoType } from "../types/Tetromino";
 export class Bag {
 
     private pieces: TetrominoType[] = [];
+    private queue: TetrominoType[] = [];
+    private readonly previewSize = 5;
 
     constructor() {
         this.refill();
+
+        while(this.queue.length < this.previewSize) {
+            this.queue.push(this.drawFromBag());
+        };
     }
 
     next(): TetrominoType {
+        const piece = this.queue.shift()!;
 
-        if (this.pieces.length === 0) {
-            this.refill();
-        }
+        this.queue.push(this.drawFromBag());
 
-        return this.pieces.pop()!;
+        return piece;
     }
 
     private refill(): void {
@@ -49,5 +54,16 @@ export class Bag {
             ];
         }
 
+    }
+
+    private drawFromBag():TetrominoType {
+        if(this.pieces.length === 0) {
+            this.refill();
+        };
+        return this.pieces.pop()!;
+    }
+
+    public getQueue(): readonly TetrominoType[] {
+        return this.queue;
     }
 }

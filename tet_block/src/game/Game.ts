@@ -4,6 +4,7 @@ import { Bag } from "./bag";
 import { Board } from "./Board";
 import { GRAVITY_DELAY, LOCK_DELAY } from "./Constants";
 import { Piece } from "./Piece";
+import { TetrominoType } from "../types/Tetromino";
 
 export class Game {
 
@@ -45,6 +46,7 @@ export class Game {
     }
 
     update(deltaTime: number):void {
+        
         if(this.gameOver) {
             return;
         };
@@ -103,6 +105,7 @@ export class Game {
         }
 
         this.spawn();
+        console.log(this.bag.getQueue())
     };
 
     public lockCurrentPiece():void {
@@ -129,6 +132,10 @@ export class Game {
 
     public isGameOver(): boolean {
         return this.gameOver;
+    }
+    
+    public getNextQueue(): readonly TetrominoType[] {
+        return this.bag.getQueue();
     }
 
     //Ghost Piece 함수
