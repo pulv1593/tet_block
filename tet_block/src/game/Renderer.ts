@@ -1,4 +1,4 @@
-import { CELL_SIZE, BOARD_WIDTH } from "./Constants";
+import { CELL_SIZE, BOARD_WIDTH, BOARD_OFFSET_X } from "./Constants";
 import { Board } from "./Board";
 import { Piece } from "./Piece";
 import { Game } from "./Game";
@@ -30,7 +30,9 @@ export class Renderer {
         }
 
         this.drawPiece(game.currentPiece);
-
+        
+        this.drawHold(game.getHeldPiece())
+        
         this.drawNextQueue(game.getNextQueue());
     }
 
@@ -51,7 +53,7 @@ export class Renderer {
 
                 this.ctx.strokeStyle = "#333";
                 this.ctx.strokeRect(
-                    x * CELL_SIZE,
+                    BOARD_OFFSET_X + x * CELL_SIZE,
                     y * CELL_SIZE,
                     CELL_SIZE,
                     CELL_SIZE
@@ -113,7 +115,7 @@ export class Renderer {
     ): void {
 
         this.drawPixelCell(
-            x * CELL_SIZE,
+            BOARD_OFFSET_X + x * CELL_SIZE,
             y * CELL_SIZE,
             color
         );
@@ -156,7 +158,7 @@ export class Renderer {
     ): void {
 
         const startX =
-            BOARD_WIDTH * CELL_SIZE + 20;
+            BOARD_OFFSET_X + BOARD_WIDTH * CELL_SIZE + 20;
 
         const startY = 20;
 
@@ -183,31 +185,82 @@ export class Renderer {
         pixelY: number
     ): void {
 
-        const shape =
-            TETROMINO_SHAPES[type][0];
+        const shape = TETROMINO_SHAPES[type][0];
+
+        let minX = 4;
+        let maxX = 0;
+        let minY = 4;
+        let maxY = 0;
+
+        for (let y = 0; y < 4; y++) {
+            for (let x = 0; x < 4; x++) {
+
+                if (shape[y][x] === 0) continue;
+
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            }
+        }
+
+        const width = maxX - minX + 1;
+        const height = maxY - minY + 1;
+
+        const offsetX =
+            (4 * CELL_SIZE - width * CELL_SIZE) / 2;
+
+        const offsetY =
+            (4 * CELL_SIZE - height * CELL_SIZE) / 2;
 
         const color =
-            TETROMINO_COLORS[
-                TETROMINO_IDS[type]
-            ];
+            TETROMINO_COLORS[TETROMINO_IDS[type]];
 
-        for (let y = 0; y < shape.length; y++) {
+        for (let y = minY; y <= maxY; y++) {
 
-            for (let x = 0; x < shape[y].length; x++) {
+            for (let x = minX; x <= maxX; x++) {
 
-                if (shape[y][x] === 0) {
-                    continue;
-                }
+                if (shape[y][x] === 0) continue;
 
                 this.drawPixelCell(
-                    pixelX + x * CELL_SIZE,
-                    pixelY + y * CELL_SIZE,
+                    pixelX + offsetX + (x - minX) * CELL_SIZE,
+                    pixelY + offsetY + (y - minY) * CELL_SIZE,
                     color
                 );
 
             }
 
         }
+
+    }
+
+    //hold 출력
+    private drawHold(
+        type: TetrominoType | null
+    ): void {
+
+        if (type === null) {
+            return;
+        }
+
+        const startX = 20;
+        const startY = 20;
+
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "20px Arial";
+
+        this.ctx.fillText(
+            "HOLD",
+            startX,
+            startY
+        );
+
+        this.drawMiniPiece(
+            type,
+            startX,
+            startY + 30
+        );
 
     }
 }

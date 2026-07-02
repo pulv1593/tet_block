@@ -4,13 +4,14 @@ import {
     BOARD_WIDTH,
     BOARD_HEIGHT,
     CELL_SIZE,
-    SIDE_PANEL_WIDTH
+    LEFT_PANEL_WIDTH,
+    RIGHT_PANEL_WIDTH,
 } from "./game/Constants";
 
 const canvas =
     document.getElementById("game") as HTMLCanvasElement;
 
-canvas.width = BOARD_WIDTH * CELL_SIZE + SIDE_PANEL_WIDTH;
+canvas.width = LEFT_PANEL_WIDTH + BOARD_WIDTH * CELL_SIZE + RIGHT_PANEL_WIDTH;
 canvas.height = BOARD_HEIGHT * CELL_SIZE;
 
 const ctx = canvas.getContext("2d")!;

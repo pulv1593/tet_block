@@ -65,6 +65,9 @@ export class InputManager {
                     this.game.currentPiece.y = this.game.getLandingY();
                     this.game.lockCurrentPiece();
                     break;
+                case "KeyC":
+                    this.game.hold();
+                    break;
             }
         })
     }

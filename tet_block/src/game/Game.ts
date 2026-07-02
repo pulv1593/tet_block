@@ -29,6 +29,10 @@ export class Game {
     //gameover 변수
     private gameOver = false;
 
+    //hold 변수
+    private heldPiece: TetrominoType | null = null;
+    private canHold = true;
+
     constructor() {
 
         this.board = new Board();
@@ -104,6 +108,8 @@ export class Game {
             console.log(`${lines} line(s) cleared`);
         }
 
+        this.canHold = true;
+
         this.spawn();
         console.log(this.bag.getQueue())
     };
@@ -133,7 +139,7 @@ export class Game {
     public isGameOver(): boolean {
         return this.gameOver;
     }
-    
+
     public getNextQueue(): readonly TetrominoType[] {
         return this.bag.getQueue();
     }
@@ -153,5 +159,37 @@ export class Game {
         }
 
         return landingY;
+    }
+
+    //hold 함수
+    public getHeldPiece(): TetrominoType | null {
+        return this.heldPiece;
+    }
+
+    public hold(): void {
+        if (!this.canHold) {
+            return;
+        }
+
+        this.canHold = false;
+
+        if (this.heldPiece === null) {
+
+            this.heldPiece =
+                this.currentPiece.type;
+
+            this.spawn();
+
+            return;
+        }
+
+        const temp = this.heldPiece;
+
+        this.heldPiece =
+            this.currentPiece.type;
+
+        this.currentPiece =
+            new Piece(temp);
+
     }
 }
