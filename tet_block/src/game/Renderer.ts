@@ -22,7 +22,7 @@ export class Renderer {
 
         this.drawBoard(game.board);
 
-        if (game.settings.showGhostPiece) {
+        if (game.getSettings().showGhostPiece) {
             this.drawGhost(
                 game.currentPiece,
                 game.getLandingY()
