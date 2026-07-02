@@ -5,19 +5,22 @@ Inspired by TETR.IO
 프로젝트 구조
 src
 ├── game
-│   ├── Game.ts
-│   ├── Board.ts
-│   ├── Piece.ts
-│   ├── Renderer.ts
 │   ├── Bag.ts
-│   └── Constants.ts
+│   ├── Board.ts
+│   ├── Constants.ts
+│   ├── Game.ts
+│   ├── Piece.ts
+│   └── Renderer.ts
 │
 ├── input
 │   └── InputManager.ts
 │
+├── settings
+│   └── GameSettings.ts
+│
 ├── srs
-│   ├── Rotation.ts
-│   └── KickTable.ts
+│   ├── KickTable.ts
+│   └── Rotation.ts
 │
 ├── types
 │   └── Tetromino.ts
