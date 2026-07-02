@@ -1,6 +1,9 @@
 # tet_block
 Inspired by TETR.IO
 
+# URL
+tetmino.netlify.app
+
 ```text
 프로젝트 구조
 src
