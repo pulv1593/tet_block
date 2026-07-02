@@ -2,7 +2,7 @@ import { InputManager } from "../input/InputManager";
 import { GameSettings } from "../settings/GameSettings";
 import { Bag } from "./bag";
 import { Board } from "./Board";
-import { GRAVITY_DELAY, LOCK_DELAY } from "./Constants";
+import { GRAVITY_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 import { TetrominoType } from "../types/Tetromino";
 
@@ -10,7 +10,12 @@ export class Game {
 
     readonly board: Board;
     readonly input: InputManager;
-    readonly settings: GameSettings;
+
+    private settings: GameSettings;
+
+    public getSettings(): GameSettings {
+        return this.settings;
+    }
 
     currentPiece: Piece;
 
@@ -20,8 +25,11 @@ export class Game {
 
     //lock delay 변수
     private lockTimer = 0;
-    private readonly lockDelay = LOCK_DELAY;
     private isGrounded = false;
+
+    private get lockDelay():number {
+        return this.settings.lockDelay;
+    }
 
     //7-bag 변수
     private bag : Bag;
@@ -41,12 +49,11 @@ export class Game {
         this.currentPiece =
             new Piece(this.bag.next());
 
-        this.input =
-            new InputManager(this);
+        this.settings = new GameSettings();
+
+        this.input = new InputManager(this);
 
         this.input.initialize();
-
-        this.settings = new GameSettings();
     }
 
     update(deltaTime: number):void {
@@ -55,6 +62,8 @@ export class Game {
             return;
         };
 
+        this.input.update(deltaTime);
+        
         this.gravityTimer += deltaTime;
 
         while (this.gravityTimer >= this.gravityDelay) {
@@ -91,6 +100,10 @@ export class Game {
         }
         this.isGrounded = true;
         return false;
+    }
+    
+    public softDrop(): boolean {
+        return this.tryMoveDown();
     }
 
     //Merge

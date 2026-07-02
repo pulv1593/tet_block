@@ -13,4 +13,11 @@ export const BOARD_OFFSET_X = LEFT_PANEL_WIDTH;
 export const GRAVITY_DELAY = 1000;
 
 //lockDelay 상수
-export const LOCK_DELAY = 500;
+//export const LOCK_DELAY = 500;
+
+//Default Setting
+export const DEFAULT_DAS = 167;
+export const DEFAULT_ARR = 33;
+export const DEFAULT_SDF = 20;
+
+export const DEFAULT_LOCK_DELAY = 500;
