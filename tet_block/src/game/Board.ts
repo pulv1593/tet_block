@@ -116,4 +116,21 @@ export class Board {
 
         return cleared;
     }
+    public isBlocked(
+        x: number,
+        y: number
+    ): boolean {
+        if (
+            x < 0 ||
+            x >= BOARD_WIDTH ||
+            y >= BOARD_HEIGHT
+        ) {
+            return true;
+        }
+
+        if (y < 0) {
+            return false;
+        }
+        return this.grid[y][x] !== 0;
+    }
 }

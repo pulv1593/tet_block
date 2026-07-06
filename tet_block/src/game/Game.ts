@@ -6,8 +6,13 @@ import { GRAVITY_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 import { TetrominoType } from "../types/Tetromino";
 import { RotateDirection, Rotation } from "../srs/Rotation";
-import { ScoreManager } from "../Score/ScoreManager";
-import { ScoreEvent } from "../Score/ScoreEvent";
+import { ScoreManager } from "../score/ScoreManager";
+import { ScoreEvent } from "../score/ScoreEvent";
+import { SpinType } from "../spin/SpinType";
+import { SpinDetector } from "../spin/SpinDetector";
+import type { SpinResult } from "../spin/SpinResult";
+import { ActionType } from "../action/ActionType";
+import type { ActionType as ActionTypeType } from "../action/ActionType";
 
 export class Game {
 
@@ -50,6 +55,16 @@ export class Game {
 
     //score 변수
     private scoreManager: ScoreManager;
+
+    //spin 변수
+    private lastSpin: SpinResult = {
+        type: SpinType.NONE,
+        isMini: false,
+        rotated: false,
+    };
+    //action 변수
+    private lastAction: ActionTypeType =
+        ActionType.NONE;
 
     constructor() {
 
@@ -100,10 +115,18 @@ export class Game {
     }
     
     public softDrop(): boolean {
-        return this.tryMoveDown();
+        const moved = this.tryMoveDown();
+
+        if(moved) {
+            this.lastAction = ActionType.SOFT_DROP;
+        }
+
+        return moved;
     }
 
     public hardDrop(): void {
+        this.lastAction = ActionType.HARD_DROP;
+        
         this.currentPiece.y =
             this.getLandingY();
         this.merge();
@@ -166,6 +189,8 @@ export class Game {
 
         this.afterSuccessfulAction();
 
+        this.lastAction = ActionType.MOVE;
+
         return true;
     }
 
@@ -184,6 +209,8 @@ export class Game {
 
         this.afterSuccessfulAction();
 
+        this.lastAction = ActionType.MOVE;
+
         return true;
     }
 
@@ -199,7 +226,9 @@ export class Game {
         }
 
         this.afterSuccessfulAction();
-
+        
+        this.lastAction = ActionType.ROTATE;
+        
         return true;
     }
 
@@ -215,12 +244,20 @@ export class Game {
         }
 
         this.afterSuccessfulAction();
+        
+        this.lastAction = ActionType.ROTATE;
 
         return true;
     }
 
     //Merge
     private merge():void{
+        this.lastSpin = SpinDetector.detect (
+            this.board,
+            this.currentPiece,
+            this.lastAction
+        )
+
         this.board.mergePiece(
             this.currentPiece
         );
@@ -264,6 +301,12 @@ export class Game {
 
         this.canHold = true;
 
+        this.lastSpin = {
+            type: SpinType.NONE,
+            isMini: false,
+            rotated: false
+        };
+
         this.spawn();
     };
 
@@ -280,6 +323,8 @@ export class Game {
 
     //Spawn
     private spawn(): void {
+        this.lastAction = ActionType.NONE;
+
         this.currentPiece =
             new Piece(
                 this.bag.next()
@@ -327,6 +372,8 @@ export class Game {
     }
 
     public hold(): void {
+        this.lastAction = ActionType.HOLD;
+
         if (!this.canHold) {
             return;
         }
@@ -363,5 +410,13 @@ export class Game {
 
     public getTotalLines(): number {
         return this.scoreManager.getTotalLines();
+    }
+
+    public getLastSpin(): SpinResult {
+        return this.lastSpin;
+    }
+
+    public getLastAction(): ActionTypeType {
+        return this.lastAction;
     }
 }
