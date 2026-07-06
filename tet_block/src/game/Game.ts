@@ -6,6 +6,8 @@ import { GRAVITY_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 import { TetrominoType } from "../types/Tetromino";
 import { RotateDirection, Rotation } from "../srs/Rotation";
+import { ScoreManager } from "../Score/ScoreManager";
+import { ScoreEvent } from "../Score/ScoreEvent";
 
 export class Game {
 
@@ -46,6 +48,9 @@ export class Game {
     private heldPiece: TetrominoType | null = null;
     private canHold = true;
 
+    //score 변수
+    private scoreManager: ScoreManager;
+
     constructor() {
 
         this.board = new Board();
@@ -57,6 +62,8 @@ export class Game {
         this.settings = new GameSettings();
 
         this.input = new InputManager(this);
+
+        this.scoreManager = new ScoreManager();
 
         this.input.initialize();
     }
@@ -224,8 +231,35 @@ export class Game {
 
         const lines = this.board.clearLines();
 
-        if (lines > 0) {
-            console.log(`${lines} line(s) cleared`);
+        switch (lines) {
+        case 1:
+            this.scoreManager.addScore(
+                ScoreEvent.SINGLE
+            );
+            break;
+
+        case 2:
+            this.scoreManager.addScore(
+                ScoreEvent.DOUBLE
+            );
+            break;
+
+        case 3:
+            this.scoreManager.addScore(
+                ScoreEvent.TRIPLE
+            );
+            break;
+
+        case 4:
+            this.scoreManager.addScore(
+                ScoreEvent.TETRIS
+            );
+            break;
+        default:
+            this.scoreManager.addScore(
+                ScoreEvent.NONE
+            );
+            break;
         }
 
         this.canHold = true;
@@ -316,6 +350,18 @@ export class Game {
 
         this.currentPiece =
             new Piece(temp);
+    }
 
+    //scoreManager getter
+    public getScore(): number {
+        return this.scoreManager.getScore();
+    }
+
+    public getLevel(): number {
+        return this.scoreManager.getLevel();
+    }
+
+    public getTotalLines(): number {
+        return this.scoreManager.getTotalLines();
     }
 }
