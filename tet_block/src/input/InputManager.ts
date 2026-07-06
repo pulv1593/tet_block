@@ -78,22 +78,29 @@ export class InputManager {
                     break;
 
                 case "KeyX":
-
-                    Rotation.rotate(
-                        this.game.board,
-                        this.game.currentPiece,
-                        RotateDirection.CW
-                    );
+                    if (
+                        Rotation.rotate(
+                            this.game.board,
+                            this.game.currentPiece,
+                            RotateDirection.CW
+                        )
+                    ) {
+                        this.game.resetLockDelay();
+                    };
 
                     break;
 
                 case "KeyZ":
 
-                    Rotation.rotate(
-                        this.game.board,
-                        this.game.currentPiece,
-                        RotateDirection.CCW
-                    );
+                    if(
+                        Rotation.rotate(
+                            this.game.board,
+                            this.game.currentPiece,
+                            RotateDirection.CCW
+                        )
+                    ) {
+                        this.game.resetLockDelay();
+                    };
 
                     break;
 
@@ -166,6 +173,7 @@ export class InputManager {
             this.game.currentPiece.move(direction, 0);
 
             // TODO: Lock Reset
+            this.game.resetLockDelay();
         }
 
     }
@@ -201,23 +209,15 @@ export class InputManager {
 
         // ARR = 0
         if (this.game.getSettings().arr === 0) {
+            while (true) {
+                const oldx = this.game.currentPiece.x;
+                
+                this.moveHorizontal(this.horizontalDirection);
 
-            while (
-                this.game.board.isValidPosition(
-                    this.game.currentPiece,
-                    this.game.currentPiece.x +
-                    this.horizontalDirection,
-                    this.game.currentPiece.y
-                )
-            ) {
-
-                this.moveHorizontal(
-                    this.horizontalDirection
-                );
-
+                if(oldx === this.game.currentPiece.x) {
+                    break;
+                }
             }
-
-            return;
         }
 
         // ARR
@@ -237,6 +237,7 @@ export class InputManager {
             this.horizontalDirection
         );
     }
+
     private updateSoftDrop(deltaTime: number): void {
 
         if (!this.downPressed) {

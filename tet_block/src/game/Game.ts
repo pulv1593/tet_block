@@ -26,6 +26,10 @@ export class Game {
     //lock delay 변수
     private lockTimer = 0;
     private isGrounded = false;
+    
+    // Lock Reset
+    private lockResetCount = 0;
+    private readonly maxLockReset = 15;
 
     private get lockDelay():number {
         return this.settings.lockDelay;
@@ -96,6 +100,7 @@ export class Game {
 
             this.currentPiece.move(0,1);
             this.isGrounded = false;
+            this.lockResetCount = 0;
             return true;
         }
         this.isGrounded = true;
@@ -114,6 +119,7 @@ export class Game {
 
         this.isGrounded = false;
         this.lockTimer = 0;
+        this.lockResetCount = 0;
 
         const lines = this.board.clearLines();
 
@@ -130,6 +136,17 @@ export class Game {
     public lockCurrentPiece():void {
         this.merge();
     };
+
+    public resetLockDelay(): void{
+        if(!this.isGrounded) {
+            return;
+        }
+        if(this.lockResetCount >= this.maxLockReset) {
+            return;
+        }
+        this.lockTimer = 0;
+        this.lockResetCount++;
+    }
 
     //Spawn
     private spawn(): void {
