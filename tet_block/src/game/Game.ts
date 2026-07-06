@@ -5,6 +5,7 @@ import { Board } from "./Board";
 import { GRAVITY_DELAY } from "./Constants";
 import { Piece } from "./Piece";
 import { TetrominoType } from "../types/Tetromino";
+import { RotateDirection, Rotation } from "../srs/Rotation";
 
 export class Game {
 
@@ -67,26 +68,10 @@ export class Game {
         };
 
         this.input.update(deltaTime);
-        
-        this.gravityTimer += deltaTime;
-
-        while (this.gravityTimer >= this.gravityDelay) {
-
-            this.gravityTimer -= this.gravityDelay;
-
-            this.tryMoveDown();
-        }
-
-        //lock Delay
-        if(this.isGrounded) {
-            this.lockTimer += deltaTime;
-            if(this.lockTimer >= this.lockDelay){
-                this.merge();
-            }
-        } else {
-            this.lockTimer = 0;
-        }
+        this.updateGravity(deltaTime);
+        this.updateLockDelay(deltaTime);
     }
+
     //1칸 down
     private tryMoveDown():boolean {
 
@@ -111,6 +96,122 @@ export class Game {
         return this.tryMoveDown();
     }
 
+    public hardDrop(): void {
+        this.currentPiece.y =
+            this.getLandingY();
+        this.merge();
+    }
+
+    private updateGroundState(): void {
+        this.isGrounded =
+            !this.board.isValidPosition(
+                this.currentPiece,
+                this.currentPiece.x,
+                this.currentPiece.y + 1
+            );
+
+        if (!this.isGrounded) {
+            this.lockTimer = 0;
+        }
+    }
+
+    private afterSuccessfulAction(): void {
+        this.updateGroundState();
+        this.resetLockDelay();
+    }
+
+    private updateGravity(deltaTime: number): void {
+        this.gravityTimer += deltaTime;
+
+        while (this.gravityTimer >= this.gravityDelay) {
+
+            this.gravityTimer -= this.gravityDelay;
+
+            this.tryMoveDown();
+        }
+    }
+
+    private updateLockDelay(deltaTime: number): void {
+        if (!this.isGrounded) {
+            this.lockTimer = 0;
+            return;
+        }
+
+        this.lockTimer += deltaTime;
+
+        if (this.lockTimer >= this.lockDelay) {
+            this.merge();
+        }
+    }
+
+    public moveLeft(): boolean {
+        if (
+            !this.board.isValidPosition(
+                this.currentPiece,
+                this.currentPiece.x - 1,
+                this.currentPiece.y
+            )
+        ) {
+            return false;
+        }
+
+        this.currentPiece.move(-1, 0);
+
+        this.afterSuccessfulAction();
+
+        return true;
+    }
+
+    public moveRight(): boolean {
+        if (
+            !this.board.isValidPosition(
+                this.currentPiece,
+                this.currentPiece.x + 1,
+                this.currentPiece.y
+            )
+        ) {
+            return false;
+        }
+
+        this.currentPiece.move(1, 0);
+
+        this.afterSuccessfulAction();
+
+        return true;
+    }
+
+    public rotateCW(): boolean {
+        if (
+            !Rotation.rotate(
+                this.board,
+                this.currentPiece,
+                RotateDirection.CW
+            )
+        ) {
+            return false;
+        }
+
+        this.afterSuccessfulAction();
+
+        return true;
+    }
+
+    public rotateCCW(): boolean {
+        if (
+            !Rotation.rotate(
+                this.board,
+                this.currentPiece,
+                RotateDirection.CCW
+            )
+        ) {
+            return false;
+        }
+
+        this.afterSuccessfulAction();
+
+        return true;
+    }
+
     //Merge
     private merge():void{
         this.board.mergePiece(
@@ -130,14 +231,9 @@ export class Game {
         this.canHold = true;
 
         this.spawn();
-        console.log(this.bag.getQueue())
     };
 
-    public lockCurrentPiece():void {
-        this.merge();
-    };
-
-    public resetLockDelay(): void{
+    private resetLockDelay(): void{
         if(!this.isGrounded) {
             return;
         }

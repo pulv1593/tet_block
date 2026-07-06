@@ -1,5 +1,4 @@
 import { Game } from "../game/Game";
-import { RotateDirection, Rotation } from "../srs/Rotation";
 
 export class InputManager {
 
@@ -28,7 +27,11 @@ export class InputManager {
     }
 
     initialize() {
+        this.initializeKeyDown();
+        this.initializeKeyUp();
+    }
 
+    private initializeKeyDown(): void {
         window.addEventListener("keydown", (e) => {
 
             if (this.game.isGameOver()) {
@@ -40,8 +43,7 @@ export class InputManager {
                 case "ArrowLeft":
 
                     if (!this.leftPressed) {
-
-                        this.moveHorizontal(-1);
+                        this.game.moveLeft();
 
                         this.dasTimer = 0;
                         this.arrTimer = 0;
@@ -57,8 +59,7 @@ export class InputManager {
                 case "ArrowRight":
 
                     if (!this.rightPressed) {
-
-                        this.moveHorizontal(1);
+                        this.game.moveRight();
 
                         this.dasTimer = 0;
                         this.arrTimer = 0;
@@ -78,51 +79,25 @@ export class InputManager {
                     break;
 
                 case "KeyX":
-                    if (
-                        Rotation.rotate(
-                            this.game.board,
-                            this.game.currentPiece,
-                            RotateDirection.CW
-                        )
-                    ) {
-                        this.game.resetLockDelay();
-                    };
-
+                    this.game.rotateCW();
                     break;
 
                 case "KeyZ":
-
-                    if(
-                        Rotation.rotate(
-                            this.game.board,
-                            this.game.currentPiece,
-                            RotateDirection.CCW
-                        )
-                    ) {
-                        this.game.resetLockDelay();
-                    };
-
+                    this.game.rotateCCW();
                     break;
 
                 case "Space":
-
-                    this.game.currentPiece.y =
-                        this.game.getLandingY();
-
-                    this.game.lockCurrentPiece();
-
+                    this.game.hardDrop();
                     break;
 
                 case "KeyC":
-
                     this.game.hold();
-
                     break;
-
             }
-
         });
+    }
 
+    private initializeKeyUp(): void {
         window.addEventListener("keyup", (e) => {
 
             switch (e.code) {
@@ -156,26 +131,7 @@ export class InputManager {
             this.dasTimer = 0;
             this.arrTimer = 0;
             this.dasCompleted = false;
-
         });
-
-    }
-
-    private moveHorizontal(direction: number): void {
-
-        if (
-            this.game.board.isValidPosition(
-                this.game.currentPiece,
-                this.game.currentPiece.x + direction,
-                this.game.currentPiece.y
-            )
-        ) {
-            this.game.currentPiece.move(direction, 0);
-
-            // TODO: Lock Reset
-            this.game.resetLockDelay();
-        }
-
     }
 
     public update(deltaTime: number): void {
@@ -210,14 +166,12 @@ export class InputManager {
         // ARR = 0
         if (this.game.getSettings().arr === 0) {
             while (true) {
-                const oldx = this.game.currentPiece.x;
-                
-                this.moveHorizontal(this.horizontalDirection);
-
-                if(oldx === this.game.currentPiece.x) {
+                const moved = this.horizontalDirection < 0 ? this.game.moveLeft() : this.game.moveRight();
+                if(!moved) {
                     break;
                 }
             }
+            return;
         }
 
         // ARR
@@ -233,9 +187,11 @@ export class InputManager {
         this.arrTimer -=
             this.game.getSettings().arr;
 
-        this.moveHorizontal(
-            this.horizontalDirection
-        );
+        if(this.horizontalDirection < 0) {
+            this.game.moveLeft();
+        } else {
+            this.game.moveRight();
+        }
     }
 
     private updateSoftDrop(deltaTime: number): void {
