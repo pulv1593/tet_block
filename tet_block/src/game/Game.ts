@@ -13,6 +13,7 @@ import { SpinDetector } from "../spin/SpinDetector";
 import type { SpinResult } from "../spin/SpinResult";
 import { ActionType } from "../action/ActionType";
 import type { ActionType as ActionTypeType } from "../action/ActionType";
+import type { LockResult } from "./LockResult";
 
 export class Game {
 
@@ -62,9 +63,16 @@ export class Game {
         isMini: false,
         rotated: false,
     };
+
+    private lastLockResult: LockResult = {
+        spin: this.lastSpin,
+        linesCleared: 0,
+    };
     //action 변수
     private lastAction: ActionTypeType =
         ActionType.NONE;
+
+    private lastKickIndex = -1;
 
     constructor() {
 
@@ -119,16 +127,23 @@ export class Game {
 
         if(moved) {
             this.lastAction = ActionType.SOFT_DROP;
+            this.lastKickIndex = -1;
         }
 
         return moved;
     }
 
     public hardDrop(): void {
-        this.lastAction = ActionType.HARD_DROP;
-        
-        this.currentPiece.y =
-            this.getLandingY();
+        const landingY = this.getLandingY();
+
+        // A zero-distance hard drop only locks the piece, so preserve a
+        // preceding rotation for T-spin detection. Moving downward invalidates it.
+        if (landingY !== this.currentPiece.y) {
+            this.lastAction = ActionType.HARD_DROP;
+            this.lastKickIndex = -1;
+        }
+
+        this.currentPiece.y = landingY;
         this.merge();
     }
 
@@ -190,6 +205,7 @@ export class Game {
         this.afterSuccessfulAction();
 
         this.lastAction = ActionType.MOVE;
+        this.lastKickIndex = -1;
 
         return true;
     }
@@ -210,41 +226,44 @@ export class Game {
         this.afterSuccessfulAction();
 
         this.lastAction = ActionType.MOVE;
+        this.lastKickIndex = -1;
 
         return true;
     }
 
     public rotateCW(): boolean {
-        if (
-            !Rotation.rotate(
-                this.board,
-                this.currentPiece,
-                RotateDirection.CW
-            )
-        ) {
+        const result = Rotation.rotate(
+            this.board,
+            this.currentPiece,
+            RotateDirection.CW
+        );
+
+        if (!result.rotated) {
             return false;
         }
 
+        this.lastKickIndex = result.kickIndex;
+
         this.afterSuccessfulAction();
-        
         this.lastAction = ActionType.ROTATE;
         
         return true;
     }
 
     public rotateCCW(): boolean {
-        if (
-            !Rotation.rotate(
-                this.board,
-                this.currentPiece,
-                RotateDirection.CCW
-            )
-        ) {
+        const result = Rotation.rotate(
+            this.board,
+            this.currentPiece,
+            RotateDirection.CCW
+        );
+
+        if (!result.rotated) {
             return false;
         }
 
+        this.lastKickIndex = result.kickIndex;
+
         this.afterSuccessfulAction();
-        
         this.lastAction = ActionType.ROTATE;
 
         return true;
@@ -255,8 +274,9 @@ export class Game {
         this.lastSpin = SpinDetector.detect (
             this.board,
             this.currentPiece,
-            this.lastAction
-        )
+            this.lastAction,
+            this.lastKickIndex
+        );
 
         this.board.mergePiece(
             this.currentPiece
@@ -267,6 +287,11 @@ export class Game {
         this.lockResetCount = 0;
 
         const lines = this.board.clearLines();
+
+        this.lastLockResult = {
+            spin: this.lastSpin,
+            linesCleared: lines,
+        };
 
         switch (lines) {
         case 1:
@@ -301,12 +326,6 @@ export class Game {
 
         this.canHold = true;
 
-        this.lastSpin = {
-            type: SpinType.NONE,
-            isMini: false,
-            rotated: false
-        };
-
         this.spawn();
     };
 
@@ -324,6 +343,7 @@ export class Game {
     //Spawn
     private spawn(): void {
         this.lastAction = ActionType.NONE;
+        this.lastKickIndex = -1;
 
         this.currentPiece =
             new Piece(
@@ -373,6 +393,7 @@ export class Game {
 
     public hold(): void {
         this.lastAction = ActionType.HOLD;
+        this.lastKickIndex = -1;
 
         if (!this.canHold) {
             return;
@@ -416,7 +437,15 @@ export class Game {
         return this.lastSpin;
     }
 
+    public getLastLockResult(): LockResult {
+        return this.lastLockResult;
+    }
+
     public getLastAction(): ActionTypeType {
         return this.lastAction;
+    }
+
+    public getLastKickIndex(): number {
+        return this.lastKickIndex;
     }
 }

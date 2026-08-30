@@ -2,6 +2,7 @@ import { Board } from "../game/Board";
 import { Piece } from "../game/Piece";
 
 import { getKickOffsets } from "./KickTable";
+import type { RotationResult } from "./RotationResult";
 
 export const RotateDirection = {
     CW: "CW",
@@ -31,7 +32,7 @@ export class Rotation {
         board: Board,
         piece: Piece,
         direction: RotateDirection
-    ): boolean {
+    ): RotationResult {
 
         const oldRotation = piece.rotation;
 
@@ -46,7 +47,8 @@ export class Rotation {
             newRotation
         );
 
-        for (const kick of kicks) {
+        for (let i = 0; i < kicks.length; i++) {
+            const kick = kicks[i];
 
             const testX = piece.x + kick.x;
             const testY = piece.y - kick.y;
@@ -64,11 +66,17 @@ export class Rotation {
                 piece.x = testX;
                 piece.y = testY;
 
-                return true;
+                return {
+                    rotated: true,
+                    kickIndex: i,
+                };
             }
 
         }
 
-        return false;
+        return {
+            rotated: false,
+            kickIndex: -1,
+        };
     }
 }
