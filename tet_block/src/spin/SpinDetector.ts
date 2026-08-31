@@ -6,6 +6,7 @@ import { SpinType } from "./SpinType";
 import type { SpinResult } from "./SpinResult";
 import { ActionType } from "../action/ActionType";
 import type { ActionType as ActionTypeType } from "../action/ActionType";
+import type { RotationResult } from "../srs/RotationResult";
 
 export class SpinDetector {
 
@@ -13,15 +14,20 @@ export class SpinDetector {
         board: Board,
         piece: Piece,
         lastAction: ActionTypeType,
-        kickIndex: number,
+        lastRotation: RotationResult | null,
     ): SpinResult {
-        if(lastAction !== ActionType.ROTATE) {
+        if (
+            lastAction !== ActionType.ROTATE ||
+            lastRotation === null ||
+            !lastRotation.rotated ||
+            lastRotation.toRotation !== piece.rotation
+        ) {
             return this.noSpin(false);
-        };
+        }
 
         switch (piece.type) {
         case TetrominoType.T:
-            return this.detectTSpin(board, piece, kickIndex);
+            return this.detectTSpin(board, piece, lastRotation);
 
         default:
             return this.noSpin(true);
@@ -41,7 +47,7 @@ export class SpinDetector {
     private static detectTSpin(
         board: Board,
         piece: Piece,
-        kickIndex: number,
+        lastRotation: RotationResult,
     ): SpinResult {
         const blocked = 
             this.countBlockedCorners(board, piece);
@@ -51,9 +57,9 @@ export class SpinDetector {
         const frontCorners =
             this.countFrontCorners(board, piece);
 
-        // Both front corners make a full T-spin. SRS test 5 (index 4)
-        // upgrades a mini-shaped placement to a full T-spin.
-        const isMini = frontCorners < 2 && kickIndex !== 4;
+        const isMini =
+            frontCorners < 2 &&
+            !this.isMiniUpgrade(lastRotation);
 
         return {
             type: SpinType.T,
@@ -61,6 +67,19 @@ export class SpinDetector {
             rotated: true,
         };
     };
+
+    private static isMiniUpgrade(
+        rotation: RotationResult
+    ): boolean {
+        if (rotation.kick === null) {
+            return false;
+        }
+
+        return (
+            Math.abs(rotation.kick.x) === 1 &&
+            Math.abs(rotation.kick.y) === 2
+        );
+    }
 
     private static countBlockedCorners(
         board: Board,

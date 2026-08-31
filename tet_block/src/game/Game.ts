@@ -7,13 +7,14 @@ import { Piece } from "./Piece";
 import { TetrominoType } from "../types/Tetromino";
 import { RotateDirection, Rotation } from "../srs/Rotation";
 import { ScoreManager } from "../score/ScoreManager";
-import { ScoreEvent } from "../score/ScoreEvent";
 import { SpinType } from "../spin/SpinType";
 import { SpinDetector } from "../spin/SpinDetector";
 import type { SpinResult } from "../spin/SpinResult";
 import { ActionType } from "../action/ActionType";
 import type { ActionType as ActionTypeType } from "../action/ActionType";
 import type { LockResult } from "./LockResult";
+import type { RotationResult } from "../srs/RotationResult";
+import { resolveScoreEvent } from "../score/ScoreEventResolver";
 
 export class Game {
 
@@ -72,7 +73,7 @@ export class Game {
     private lastAction: ActionTypeType =
         ActionType.NONE;
 
-    private lastKickIndex = -1;
+    private lastRotation: RotationResult | null = null;
 
     constructor() {
 
@@ -127,7 +128,7 @@ export class Game {
 
         if(moved) {
             this.lastAction = ActionType.SOFT_DROP;
-            this.lastKickIndex = -1;
+            this.lastRotation = null;
         }
 
         return moved;
@@ -140,7 +141,7 @@ export class Game {
         // preceding rotation for T-spin detection. Moving downward invalidates it.
         if (landingY !== this.currentPiece.y) {
             this.lastAction = ActionType.HARD_DROP;
-            this.lastKickIndex = -1;
+            this.lastRotation = null;
         }
 
         this.currentPiece.y = landingY;
@@ -205,7 +206,7 @@ export class Game {
         this.afterSuccessfulAction();
 
         this.lastAction = ActionType.MOVE;
-        this.lastKickIndex = -1;
+        this.lastRotation = null;
 
         return true;
     }
@@ -226,7 +227,7 @@ export class Game {
         this.afterSuccessfulAction();
 
         this.lastAction = ActionType.MOVE;
-        this.lastKickIndex = -1;
+        this.lastRotation = null;
 
         return true;
     }
@@ -242,7 +243,7 @@ export class Game {
             return false;
         }
 
-        this.lastKickIndex = result.kickIndex;
+        this.lastRotation = result;
 
         this.afterSuccessfulAction();
         this.lastAction = ActionType.ROTATE;
@@ -261,7 +262,7 @@ export class Game {
             return false;
         }
 
-        this.lastKickIndex = result.kickIndex;
+        this.lastRotation = result;
 
         this.afterSuccessfulAction();
         this.lastAction = ActionType.ROTATE;
@@ -275,7 +276,7 @@ export class Game {
             this.board,
             this.currentPiece,
             this.lastAction,
-            this.lastKickIndex
+            this.lastRotation
         );
 
         this.board.mergePiece(
@@ -293,36 +294,11 @@ export class Game {
             linesCleared: lines,
         };
 
-        switch (lines) {
-        case 1:
-            this.scoreManager.addScore(
-                ScoreEvent.SINGLE
-            );
-            break;
+        this.scoreManager.addScore(
+            resolveScoreEvent(this.lastLockResult)
+        );
 
-        case 2:
-            this.scoreManager.addScore(
-                ScoreEvent.DOUBLE
-            );
-            break;
-
-        case 3:
-            this.scoreManager.addScore(
-                ScoreEvent.TRIPLE
-            );
-            break;
-
-        case 4:
-            this.scoreManager.addScore(
-                ScoreEvent.TETRIS
-            );
-            break;
-        default:
-            this.scoreManager.addScore(
-                ScoreEvent.NONE
-            );
-            break;
-        }
+        this.logLockResult();
 
         this.canHold = true;
 
@@ -343,7 +319,7 @@ export class Game {
     //Spawn
     private spawn(): void {
         this.lastAction = ActionType.NONE;
-        this.lastKickIndex = -1;
+        this.lastRotation = null;
 
         this.currentPiece =
             new Piece(
@@ -393,7 +369,7 @@ export class Game {
 
     public hold(): void {
         this.lastAction = ActionType.HOLD;
-        this.lastKickIndex = -1;
+        this.lastRotation = null;
 
         if (!this.canHold) {
             return;
@@ -433,6 +409,14 @@ export class Game {
         return this.scoreManager.getTotalLines();
     }
 
+    public getCombo(): number {
+        return this.scoreManager.getCombo();
+    }
+
+    public getBackToBackCount(): number {
+        return this.scoreManager.getBackToBackCount();
+    }
+
     public getLastSpin(): SpinResult {
         return this.lastSpin;
     }
@@ -446,6 +430,47 @@ export class Game {
     }
 
     public getLastKickIndex(): number {
-        return this.lastKickIndex;
+        return this.lastRotation?.kickIndex ?? -1;
+    }
+
+    private logLockResult(): void {
+        const { spin, linesCleared } = this.lastLockResult;
+
+        console.log("[LOCK RESULT]", {
+            result: this.getLockResultName(spin, linesCleared),
+            spinType: spin.type,
+            isMini: spin.isMini,
+            linesCleared,
+            kickIndex: this.getLastKickIndex(),
+            combo: this.scoreManager.getCombo(),
+            backToBack: this.scoreManager.getBackToBackCount(),
+            backToBackBonus:
+                this.scoreManager.wasLastBackToBackBonus(),
+            scoreGain: this.scoreManager.getLastScoreGain(),
+            score: this.scoreManager.getScore(),
+        });
+    }
+
+    private getLockResultName(
+        spin: SpinResult,
+        linesCleared: number
+    ): string {
+        const lineName = [
+            "ZERO",
+            "SINGLE",
+            "DOUBLE",
+            "TRIPLE",
+            "TETRIS",
+        ][linesCleared] ?? `${linesCleared} LINES`;
+
+        if (spin.type === SpinType.NONE) {
+            return linesCleared === 0
+                ? "NO CLEAR"
+                : lineName;
+        }
+
+        const mini = spin.isMini ? " MINI" : "";
+
+        return `${spin.type}-SPIN${mini} ${lineName}`;
     }
 }

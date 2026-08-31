@@ -17,8 +17,22 @@ export type RotationTransition =
 export function getTransition(
     from: number,
     to: number
-): RotationTransition {
-    return `${from}>${to}` as RotationTransition;
+): RotationTransition | null {
+    const transition = `${from}>${to}`;
+
+    switch (transition) {
+        case "0>1":
+        case "1>2":
+        case "2>3":
+        case "3>0":
+        case "1>0":
+        case "0>3":
+        case "3>2":
+        case "2>1":
+            return transition;
+        default:
+            return null;
+    }
 }
 
 //GuideLine  공식 데이터 사용.
@@ -168,6 +182,10 @@ export function getKickOffsets(
 ): KickOffset[] {
 
     const transition = getTransition(from, to);
+
+    if (transition === null) {
+        return [];
+    }
 
     switch (type) {
 

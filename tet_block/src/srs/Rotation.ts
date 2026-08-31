@@ -69,6 +69,9 @@ export class Rotation {
                 return {
                     rotated: true,
                     kickIndex: i,
+                    kick,
+                    fromRotation: oldRotation,
+                    toRotation: newRotation,
                 };
             }
 
@@ -77,6 +80,9 @@ export class Rotation {
         return {
             rotated: false,
             kickIndex: -1,
+            kick: null,
+            fromRotation: oldRotation,
+            toRotation: newRotation,
         };
     }
 }
