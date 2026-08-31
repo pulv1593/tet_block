@@ -86,6 +86,10 @@ export class InputManager {
                     this.game.rotateCCW();
                     break;
 
+                case "KeyA":
+                    this.game.rotate180();
+                    break;
+
                 case "Space":
                     this.game.hardDrop();
                     break;

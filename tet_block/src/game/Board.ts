@@ -55,8 +55,9 @@ export class Board {
         return true;
     }
 
-    public mergePiece(piece: Piece): void {
+    public mergePiece(piece: Piece): boolean {
         const shape = piece.getShape();
+        let fullyInsideBoard = true;
 
         for (let y = 0; y < shape.length; y++) {
 
@@ -66,8 +67,15 @@ export class Board {
                     continue;
                 }
 
+                const boardY = piece.y + y;
+
+                if (boardY < 0) {
+                    fullyInsideBoard = false;
+                    continue;
+                }
+
                 this.grid[
-                    piece.y + y
+                    boardY
                 ][
                     piece.x + x
                 ] = piece.id;
@@ -75,6 +83,9 @@ export class Board {
             }
 
         }
+
+
+        return fullyInsideBoard;
 
     }
 
@@ -116,6 +127,13 @@ export class Board {
 
         return cleared;
     }
+
+    public isEmpty(): boolean {
+        return this.grid.every(
+            row => row.every(cell => cell === 0)
+        );
+    }
+
     public isBlocked(
         x: number,
         y: number

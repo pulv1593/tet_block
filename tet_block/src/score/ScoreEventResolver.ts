@@ -8,20 +8,20 @@ export function resolveScoreEvent(
 ): ScoreEventType {
     const { spin, linesCleared } = result;
 
-    if (spin.type === SpinType.T) {
+    if (spin.type !== SpinType.NONE) {
         if (spin.isMini) {
             return [
-                ScoreEvent.T_SPIN_MINI_ZERO,
-                ScoreEvent.T_SPIN_MINI_SINGLE,
-                ScoreEvent.T_SPIN_MINI_DOUBLE,
+                ScoreEvent.SPIN_MINI_ZERO,
+                ScoreEvent.SPIN_MINI_SINGLE,
+                ScoreEvent.SPIN_MINI_DOUBLE,
             ][linesCleared] ?? ScoreEvent.NONE;
         }
 
         return [
-            ScoreEvent.T_SPIN_ZERO,
-            ScoreEvent.T_SPIN_SINGLE,
-            ScoreEvent.T_SPIN_DOUBLE,
-            ScoreEvent.T_SPIN_TRIPLE,
+            ScoreEvent.SPIN_ZERO,
+            ScoreEvent.SPIN_SINGLE,
+            ScoreEvent.SPIN_DOUBLE,
+            ScoreEvent.SPIN_TRIPLE,
         ][linesCleared] ?? ScoreEvent.NONE;
     }
 

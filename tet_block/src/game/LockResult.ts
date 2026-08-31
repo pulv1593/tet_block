@@ -4,4 +4,5 @@ import type { SpinResult } from "../spin/SpinResult";
 export interface LockResult {
     spin: SpinResult;
     linesCleared: number;
+    isPerfectClear: boolean;
 }

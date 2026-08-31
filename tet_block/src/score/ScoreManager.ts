@@ -15,13 +15,13 @@ const SCORE_RULES: Record<ScoreEventType, ScoreRule> = {
     [ScoreEvent.DOUBLE]: { points: 300, lines: 2, difficult: false },
     [ScoreEvent.TRIPLE]: { points: 500, lines: 3, difficult: false },
     [ScoreEvent.TETRIS]: { points: 800, lines: 4, difficult: true },
-    [ScoreEvent.T_SPIN_ZERO]: { points: 400, lines: 0, difficult: false },
-    [ScoreEvent.T_SPIN_SINGLE]: { points: 800, lines: 1, difficult: true },
-    [ScoreEvent.T_SPIN_DOUBLE]: { points: 1200, lines: 2, difficult: true },
-    [ScoreEvent.T_SPIN_TRIPLE]: { points: 1600, lines: 3, difficult: true },
-    [ScoreEvent.T_SPIN_MINI_ZERO]: { points: 100, lines: 0, difficult: false },
-    [ScoreEvent.T_SPIN_MINI_SINGLE]: { points: 200, lines: 1, difficult: true },
-    [ScoreEvent.T_SPIN_MINI_DOUBLE]: { points: 400, lines: 2, difficult: true },
+    [ScoreEvent.SPIN_ZERO]: { points: 400, lines: 0, difficult: false },
+    [ScoreEvent.SPIN_SINGLE]: { points: 800, lines: 1, difficult: true },
+    [ScoreEvent.SPIN_DOUBLE]: { points: 1200, lines: 2, difficult: true },
+    [ScoreEvent.SPIN_TRIPLE]: { points: 1600, lines: 3, difficult: true },
+    [ScoreEvent.SPIN_MINI_ZERO]: { points: 100, lines: 0, difficult: false },
+    [ScoreEvent.SPIN_MINI_SINGLE]: { points: 200, lines: 1, difficult: true },
+    [ScoreEvent.SPIN_MINI_DOUBLE]: { points: 400, lines: 2, difficult: true },
 };
 
 export class ScoreManager {
@@ -33,6 +33,7 @@ export class ScoreManager {
     private backToBackCount = 0;
     private lastScoreGain = 0;
     private lastBackToBackBonus = false;
+    private readonly perfectClearPoints = 3500;
 
     public getScore(): number {
         return this.score;
@@ -61,7 +62,18 @@ export class ScoreManager {
         return this.lastBackToBackBonus;
     }
 
-    public addScore(event: ScoreEventType): void {
+    public addSoftDropScore(distance: number): void {
+        this.addDropScore(distance, 1);
+    }
+
+    public addHardDropScore(distance: number): void {
+        this.addDropScore(distance, 2);
+    }
+
+    public addScore(
+        event: ScoreEventType,
+        isPerfectClear = false
+    ): void {
         this.lastScoreGain = 0;
         this.lastBackToBackBonus = false;
 
@@ -94,6 +106,12 @@ export class ScoreManager {
             this.combo = -1;
         }
 
+
+        if (isPerfectClear) {
+            actionScore +=
+                this.perfectClearPoints * this.level;
+        }
+
         this.lastScoreGain = actionScore;
         this.score += actionScore;
 
@@ -108,5 +126,16 @@ export class ScoreManager {
                 this.totalLines / 10
             ) + 1;
 
+    }
+
+    private addDropScore(
+        distance: number,
+        pointsPerCell: number
+    ): void {
+        if (distance <= 0) {
+            return;
+        }
+
+        this.score += distance * pointsPerCell;
     }
 }

@@ -4,7 +4,7 @@ export interface KickOffset {
     x: number;
     y: number;
 }
-export type RotationTransition = 
+export type QuarterRotationTransition =
     "0>1"
     | "1>2"
     | "2>3"
@@ -13,6 +13,15 @@ export type RotationTransition =
     | "0>3"
     | "3>2"
     | "2>1";
+
+export type HalfRotationTransition =
+    "0>2"
+    | "1>3"
+    | "2>0"
+    | "3>1";
+
+export type RotationTransition =
+    QuarterRotationTransition | HalfRotationTransition;
 
 export function getTransition(
     from: number,
@@ -29,6 +38,10 @@ export function getTransition(
         case "0>3":
         case "3>2":
         case "2>1":
+        case "0>2":
+        case "1>3":
+        case "2>0":
+        case "3>1":
             return transition;
         default:
             return null;
@@ -37,7 +50,7 @@ export function getTransition(
 
 //GuideLine  공식 데이터 사용.
 export const JLSTZ_KICK_TABLE: Record<
-    RotationTransition,
+    QuarterRotationTransition,
     KickOffset[]
 > = {
 
@@ -108,7 +121,45 @@ export const JLSTZ_KICK_TABLE: Record<
 const O_KICK: KickOffset[] = [
     { x: 0, y: 0 }
 ];
-const I_KICK: Record<RotationTransition, KickOffset[]> = {
+
+const TETRIO_180_KICK_TABLE: Record<
+    "0>2" | "1>3" | "2>0" | "3>1",
+    KickOffset[]
+> = {
+    "0>2": [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: -1, y: 1 },
+        { x: 1, y: 0 },
+        { x: -1, y: 0 },
+    ],
+    "1>3": [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 2 },
+        { x: 1, y: 1 },
+        { x: 0, y: 2 },
+        { x: 0, y: 1 },
+    ],
+    "2>0": [
+        { x: 0, y: 0 },
+        { x: 0, y: -1 },
+        { x: -1, y: -1 },
+        { x: 1, y: -1 },
+        { x: -1, y: 0 },
+        { x: 1, y: 0 },
+    ],
+    "3>1": [
+        { x: 0, y: 0 },
+        { x: -1, y: 0 },
+        { x: -1, y: 2 },
+        { x: -1, y: 1 },
+        { x: 0, y: 2 },
+        { x: 0, y: 1 },
+    ],
+};
+const I_KICK: Record<QuarterRotationTransition, KickOffset[]> = {
 
     "0>1": [
         { x: 0,  y: 0 },
@@ -185,6 +236,15 @@ export function getKickOffsets(
 
     if (transition === null) {
         return [];
+    }
+
+    if (
+        transition === "0>2" ||
+        transition === "1>3" ||
+        transition === "2>0" ||
+        transition === "3>1"
+    ) {
+        return TETRIO_180_KICK_TABLE[transition];
     }
 
     switch (type) {

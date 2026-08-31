@@ -30,7 +30,7 @@ export class SpinDetector {
             return this.detectTSpin(board, piece, lastRotation);
 
         default:
-            return this.noSpin(true);
+            return this.detectImmobileSpin(board, piece);
         }
     };
 
@@ -52,7 +52,7 @@ export class SpinDetector {
         const blocked = 
             this.countBlockedCorners(board, piece);
         if (blocked < 3) {
-            return this.noSpin(true);
+            return this.detectImmobileSpin(board, piece);
         }
         const frontCorners =
             this.countFrontCorners(board, piece);
@@ -78,6 +78,33 @@ export class SpinDetector {
         return (
             Math.abs(rotation.kick.x) === 1 &&
             Math.abs(rotation.kick.y) === 2
+        );
+    }
+
+    private static detectImmobileSpin(
+        board: Board,
+        piece: Piece
+    ): SpinResult {
+        if (!this.isImmobile(board, piece)) {
+            return this.noSpin(true);
+        }
+
+        return {
+            type: piece.type,
+            isMini: true,
+            rotated: true,
+        };
+    }
+
+    private static isImmobile(
+        board: Board,
+        piece: Piece
+    ): boolean {
+        return (
+            !board.isValidPosition(piece, piece.x - 1, piece.y) &&
+            !board.isValidPosition(piece, piece.x + 1, piece.y) &&
+            !board.isValidPosition(piece, piece.x, piece.y - 1) &&
+            !board.isValidPosition(piece, piece.x, piece.y + 1)
         );
     }
 

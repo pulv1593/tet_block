@@ -68,6 +68,7 @@ export class Game {
     private lastLockResult: LockResult = {
         spin: this.lastSpin,
         linesCleared: 0,
+        isPerfectClear: false,
     };
     //action 변수
     private lastAction: ActionTypeType =
@@ -127,6 +128,7 @@ export class Game {
         const moved = this.tryMoveDown();
 
         if(moved) {
+            this.scoreManager.addSoftDropScore(1);
             this.lastAction = ActionType.SOFT_DROP;
             this.lastRotation = null;
         }
@@ -136,10 +138,13 @@ export class Game {
 
     public hardDrop(): void {
         const landingY = this.getLandingY();
+        const dropDistance = landingY - this.currentPiece.y;
+
+        this.scoreManager.addHardDropScore(dropDistance);
 
         // A zero-distance hard drop only locks the piece, so preserve a
         // preceding rotation for T-spin detection. Moving downward invalidates it.
-        if (landingY !== this.currentPiece.y) {
+        if (dropDistance > 0) {
             this.lastAction = ActionType.HARD_DROP;
             this.lastRotation = null;
         }
@@ -270,6 +275,25 @@ export class Game {
         return true;
     }
 
+    public rotate180(): boolean {
+        const result = Rotation.rotate(
+            this.board,
+            this.currentPiece,
+            RotateDirection.ROTATE_180
+        );
+
+        if (!result.rotated) {
+            return false;
+        }
+
+        this.lastRotation = result;
+
+        this.afterSuccessfulAction();
+        this.lastAction = ActionType.ROTATE;
+
+        return true;
+    }
+
     //Merge
     private merge():void{
         this.lastSpin = SpinDetector.detect (
@@ -279,7 +303,7 @@ export class Game {
             this.lastRotation
         );
 
-        this.board.mergePiece(
+        const fullyInsideBoard = this.board.mergePiece(
             this.currentPiece
         );
 
@@ -292,15 +316,24 @@ export class Game {
         this.lastLockResult = {
             spin: this.lastSpin,
             linesCleared: lines,
+            isPerfectClear:
+                lines > 0 && this.board.isEmpty(),
         };
 
         this.scoreManager.addScore(
-            resolveScoreEvent(this.lastLockResult)
+            resolveScoreEvent(this.lastLockResult),
+            this.lastLockResult.isPerfectClear
         );
 
         this.logLockResult();
 
         this.canHold = true;
+
+        if (!fullyInsideBoard) {
+            this.gameOver = true;
+            console.log("GAME OVER: LOCK OUT");
+            return;
+        }
 
         this.spawn();
     };
@@ -368,14 +401,17 @@ export class Game {
     }
 
     public hold(): void {
-        this.lastAction = ActionType.HOLD;
-        this.lastRotation = null;
-
         if (!this.canHold) {
             return;
         }
 
+        this.lastAction = ActionType.HOLD;
+        this.lastRotation = null;
         this.canHold = false;
+        this.gravityTimer = 0;
+        this.lockTimer = 0;
+        this.lockResetCount = 0;
+        this.isGrounded = false;
 
         if (this.heldPiece === null) {
 
@@ -394,6 +430,17 @@ export class Game {
 
         this.currentPiece =
             new Piece(temp);
+
+        if (
+            !this.board.isValidPosition(
+                this.currentPiece,
+                this.currentPiece.x,
+                this.currentPiece.y
+            )
+        ) {
+            this.gameOver = true;
+            console.log("GAME OVER: HOLD BLOCK OUT");
+        }
     }
 
     //scoreManager getter
@@ -434,13 +481,18 @@ export class Game {
     }
 
     private logLockResult(): void {
-        const { spin, linesCleared } = this.lastLockResult;
+        const {
+            spin,
+            linesCleared,
+            isPerfectClear,
+        } = this.lastLockResult;
 
         console.log("[LOCK RESULT]", {
             result: this.getLockResultName(spin, linesCleared),
             spinType: spin.type,
             isMini: spin.isMini,
             linesCleared,
+            isPerfectClear,
             kickIndex: this.getLastKickIndex(),
             combo: this.scoreManager.getCombo(),
             backToBack: this.scoreManager.getBackToBackCount(),
