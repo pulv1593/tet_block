@@ -36,6 +36,7 @@ export class Game {
     //lock delay 변수
     private lockTimer = 0;
     private isGrounded = false;
+    private lockDelayResetPending = false;
     
     // Lock Reset
     private lockResetCount = 0;
@@ -116,8 +117,7 @@ export class Game {
         ) {
 
             this.currentPiece.move(0,1);
-            this.isGrounded = false;
-            this.lockResetCount = 0;
+            this.updateGroundState();
             return true;
         }
         this.isGrounded = true;
@@ -153,7 +153,9 @@ export class Game {
         this.merge();
     }
 
-    private updateGroundState(): void {
+    private updateGroundState(
+        resetTimerWhenAirborne = true
+    ): void {
         this.isGrounded =
             !this.board.isValidPosition(
                 this.currentPiece,
@@ -161,14 +163,23 @@ export class Game {
                 this.currentPiece.y + 1
             );
 
-        if (!this.isGrounded) {
+        if (
+            !this.isGrounded &&
+            resetTimerWhenAirborne &&
+            this.lockResetCount < this.maxLockReset
+        ) {
             this.lockTimer = 0;
         }
     }
 
-    private afterSuccessfulAction(): void {
-        this.updateGroundState();
-        this.resetLockDelay();
+    private afterSuccessfulAction(
+        wasGrounded: boolean
+    ): void {
+        this.updateGroundState(!wasGrounded);
+
+        if (wasGrounded) {
+            this.resetLockDelay();
+        }
     }
 
     private updateGravity(deltaTime: number): void {
@@ -184,7 +195,21 @@ export class Game {
 
     private updateLockDelay(deltaTime: number): void {
         if (!this.isGrounded) {
-            this.lockTimer = 0;
+            if (this.lockResetCount < this.maxLockReset) {
+                this.lockTimer = 0;
+            } else {
+                // After the reset limit, airborne time still consumes the
+                // remaining lock delay. The piece is only locked on landing.
+                this.lockTimer = Math.min(
+                    this.lockTimer + deltaTime,
+                    this.lockDelay
+                );
+            }
+            return;
+        }
+
+        if (this.lockDelayResetPending) {
+            this.lockDelayResetPending = false;
             return;
         }
 
@@ -196,6 +221,7 @@ export class Game {
     }
 
     public moveLeft(): boolean {
+        const wasGrounded = this.isCurrentPieceGrounded();
         if (
             !this.board.isValidPosition(
                 this.currentPiece,
@@ -208,7 +234,7 @@ export class Game {
 
         this.currentPiece.move(-1, 0);
 
-        this.afterSuccessfulAction();
+        this.afterSuccessfulAction(wasGrounded);
 
         this.lastAction = ActionType.MOVE;
         this.lastRotation = null;
@@ -217,6 +243,7 @@ export class Game {
     }
 
     public moveRight(): boolean {
+        const wasGrounded = this.isCurrentPieceGrounded();
         if (
             !this.board.isValidPosition(
                 this.currentPiece,
@@ -229,7 +256,7 @@ export class Game {
 
         this.currentPiece.move(1, 0);
 
-        this.afterSuccessfulAction();
+        this.afterSuccessfulAction(wasGrounded);
 
         this.lastAction = ActionType.MOVE;
         this.lastRotation = null;
@@ -238,6 +265,7 @@ export class Game {
     }
 
     public rotateCW(): boolean {
+        const wasGrounded = this.isCurrentPieceGrounded();
         const result = Rotation.rotate(
             this.board,
             this.currentPiece,
@@ -250,13 +278,14 @@ export class Game {
 
         this.lastRotation = result;
 
-        this.afterSuccessfulAction();
+        this.afterSuccessfulAction(wasGrounded);
         this.lastAction = ActionType.ROTATE;
         
         return true;
     }
 
     public rotateCCW(): boolean {
+        const wasGrounded = this.isCurrentPieceGrounded();
         const result = Rotation.rotate(
             this.board,
             this.currentPiece,
@@ -269,13 +298,14 @@ export class Game {
 
         this.lastRotation = result;
 
-        this.afterSuccessfulAction();
+        this.afterSuccessfulAction(wasGrounded);
         this.lastAction = ActionType.ROTATE;
 
         return true;
     }
 
     public rotate180(): boolean {
+        const wasGrounded = this.isCurrentPieceGrounded();
         const result = Rotation.rotate(
             this.board,
             this.currentPiece,
@@ -288,7 +318,7 @@ export class Game {
 
         this.lastRotation = result;
 
-        this.afterSuccessfulAction();
+        this.afterSuccessfulAction(wasGrounded);
         this.lastAction = ActionType.ROTATE;
 
         return true;
@@ -310,6 +340,7 @@ export class Game {
         this.isGrounded = false;
         this.lockTimer = 0;
         this.lockResetCount = 0;
+        this.lockDelayResetPending = false;
 
         const lines = this.board.clearLines();
 
@@ -339,14 +370,20 @@ export class Game {
     };
 
     private resetLockDelay(): void{
-        if(!this.isGrounded) {
-            return;
-        }
         if(this.lockResetCount >= this.maxLockReset) {
             return;
         }
         this.lockTimer = 0;
         this.lockResetCount++;
+        this.lockDelayResetPending = true;
+    }
+
+    private isCurrentPieceGrounded(): boolean {
+        return !this.board.isValidPosition(
+            this.currentPiece,
+            this.currentPiece.x,
+            this.currentPiece.y + 1
+        );
     }
 
     //Spawn
@@ -367,7 +404,10 @@ export class Game {
         ) {
             this.gameOver = true;
             console.log("GAME OVER");
+            return;
         }
+
+        this.updateGroundState();
     }
 
     public isGameOver(): boolean {
@@ -411,6 +451,7 @@ export class Game {
         this.gravityTimer = 0;
         this.lockTimer = 0;
         this.lockResetCount = 0;
+        this.lockDelayResetPending = false;
         this.isGrounded = false;
 
         if (this.heldPiece === null) {
@@ -440,7 +481,10 @@ export class Game {
         ) {
             this.gameOver = true;
             console.log("GAME OVER: HOLD BLOCK OUT");
+            return;
         }
+
+        this.updateGroundState();
     }
 
     //scoreManager getter
