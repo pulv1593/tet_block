@@ -26,10 +26,13 @@ describe("resolveScoreEvent", () => {
         [SpinType.T, false, 1, ScoreEvent.SPIN_SINGLE],
         [SpinType.T, false, 2, ScoreEvent.SPIN_DOUBLE],
         [SpinType.T, false, 3, ScoreEvent.SPIN_TRIPLE],
+        [SpinType.I, false, 4, ScoreEvent.SPIN_QUAD],
         [SpinType.T, true, 0, ScoreEvent.SPIN_MINI_ZERO],
         [SpinType.T, true, 1, ScoreEvent.SPIN_MINI_SINGLE],
         [SpinType.T, true, 2, ScoreEvent.SPIN_MINI_DOUBLE],
         [SpinType.L, true, 1, ScoreEvent.SPIN_MINI_SINGLE],
+        [SpinType.L, true, 3, ScoreEvent.SPIN_MINI_TRIPLE],
+        [SpinType.I, true, 4, ScoreEvent.SPIN_MINI_QUAD],
     ] as const)(
         "maps %s mini=%s lines=%i to %s",
         (type, isMini, linesCleared, expected) => {

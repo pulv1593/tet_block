@@ -71,7 +71,17 @@ export class SpinDetector {
     private static isMiniUpgrade(
         rotation: RotationResult
     ): boolean {
-        if (rotation.kick === null) {
+        if (
+            rotation.kick === null ||
+            rotation.kickIndex !== 4
+        ) {
+            return false;
+        }
+
+        const rotationDistance =
+            (rotation.toRotation - rotation.fromRotation + 4) % 4;
+
+        if (rotationDistance !== 1 && rotationDistance !== 3) {
             return false;
         }
 

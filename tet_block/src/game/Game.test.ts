@@ -75,6 +75,17 @@ describe("Game", () => {
         expect(game.getLastLockResult().spin.type).toBe(SpinType.NONE);
     });
 
+    it("invalidates the last rotation when gravity moves the piece", () => {
+        const game = new Game();
+        const state = game as unknown as GameTestState;
+        setLastRotation(game);
+
+        expect(state.tryMoveDown()).toBe(true);
+
+        expect(state.lastAction).toBe(ActionType.NONE);
+        expect(state.lastRotation).toBeNull();
+    });
+
     it("detects block out after swapping an occupied hold piece", () => {
         const game = new Game();
         const state = game as unknown as GameTestState;

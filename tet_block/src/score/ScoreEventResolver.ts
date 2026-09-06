@@ -14,6 +14,8 @@ export function resolveScoreEvent(
                 ScoreEvent.SPIN_MINI_ZERO,
                 ScoreEvent.SPIN_MINI_SINGLE,
                 ScoreEvent.SPIN_MINI_DOUBLE,
+                ScoreEvent.SPIN_MINI_TRIPLE,
+                ScoreEvent.SPIN_MINI_QUAD,
             ][linesCleared] ?? ScoreEvent.NONE;
         }
 
@@ -22,6 +24,7 @@ export function resolveScoreEvent(
             ScoreEvent.SPIN_SINGLE,
             ScoreEvent.SPIN_DOUBLE,
             ScoreEvent.SPIN_TRIPLE,
+            ScoreEvent.SPIN_QUAD,
         ][linesCleared] ?? ScoreEvent.NONE;
     }
 

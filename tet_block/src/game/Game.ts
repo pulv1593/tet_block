@@ -118,6 +118,8 @@ export class Game {
 
             this.currentPiece.move(0,1);
             this.updateGroundState();
+            this.lastAction = ActionType.NONE;
+            this.lastRotation = null;
             return true;
         }
         this.isGrounded = true;

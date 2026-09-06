@@ -47,6 +47,31 @@ function blockCorners(
     }
 }
 
+function blockAllMovement(board: Board, piece: Piece): void {
+    const shape = piece.getShape();
+    const occupied = new Set<string>();
+
+    for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+            if (shape[y][x] !== 0) {
+                occupied.add(`${piece.x + x},${piece.y + y}`);
+            }
+        }
+    }
+
+    for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+        for (const cell of occupied) {
+            const [x, y] = cell.split(",").map(Number);
+            const destination = `${x + dx},${y + dy}`;
+
+            if (!occupied.has(destination)) {
+                board.grid[y + dy][x + dx] = 1;
+                break;
+            }
+        }
+    }
+}
+
 describe("SpinDetector T-spin", () => {
     it("requires the last successful action to be a rotation", () => {
         const board = new Board();
@@ -146,6 +171,24 @@ describe("SpinDetector T-spin", () => {
         expect(result.isMini).toBe(false);
     });
 
+    it("does not upgrade a Mini after a 180-degree kick", () => {
+        const board = new Board();
+        const piece = tPiece();
+        blockCorners(board, ["frontLeft", "backLeft", "backRight"]);
+        const halfRotation = rotationResult(4, 1, -2);
+        halfRotation.fromRotation = 2;
+
+        const result = SpinDetector.detect(
+            board,
+            piece,
+            ActionType.ROTATE,
+            halfRotation
+        );
+
+        expect(result.type).toBe(SpinType.T);
+        expect(result.isMini).toBe(true);
+    });
+
     it.each([
         { rotation: 0, corners: [[3, 10], [5, 10], [3, 12]] },
         { rotation: 1, corners: [[5, 10], [5, 12], [3, 10]] },
@@ -191,9 +234,11 @@ describe("SpinDetector All-Mini+", () => {
         piece.x = 3;
         piece.y = 10;
 
-        for (const row of board.grid) {
-            row.fill(1);
-        }
+        blockAllMovement(board, piece);
+
+        expect(
+            board.isValidPosition(piece, piece.x, piece.y)
+        ).toBe(true);
 
         const result = SpinDetector.detect(
             board,
@@ -227,14 +272,16 @@ describe("SpinDetector All-Mini+", () => {
         const board = new Board();
         const piece = tPiece();
 
-        for (const row of board.grid) {
-            row.fill(1);
-        }
+        // Block left, right, up, and down without overlapping the T piece.
+        // Only two diagonal corners are occupied, so 3-corner detection fails.
+        board.grid[10][3] = 1;
+        board.grid[10][5] = 1;
+        board.grid[9][4] = 1;
+        board.grid[12][4] = 1;
 
-        // Leave two diagonal corners empty so the 3-corner rule fails,
-        // while every possible movement remains blocked.
-        board.grid[10][3] = 0;
-        board.grid[12][5] = 0;
+        expect(
+            board.isValidPosition(piece, piece.x, piece.y)
+        ).toBe(true);
 
         const result = SpinDetector.detect(
             board,

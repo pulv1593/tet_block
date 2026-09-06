@@ -19,9 +19,12 @@ const SCORE_RULES: Record<ScoreEventType, ScoreRule> = {
     [ScoreEvent.SPIN_SINGLE]: { points: 800, lines: 1, difficult: true },
     [ScoreEvent.SPIN_DOUBLE]: { points: 1200, lines: 2, difficult: true },
     [ScoreEvent.SPIN_TRIPLE]: { points: 1600, lines: 3, difficult: true },
+    [ScoreEvent.SPIN_QUAD]: { points: 2600, lines: 4, difficult: true },
     [ScoreEvent.SPIN_MINI_ZERO]: { points: 100, lines: 0, difficult: false },
     [ScoreEvent.SPIN_MINI_SINGLE]: { points: 200, lines: 1, difficult: true },
     [ScoreEvent.SPIN_MINI_DOUBLE]: { points: 400, lines: 2, difficult: true },
+    [ScoreEvent.SPIN_MINI_TRIPLE]: { points: 800, lines: 3, difficult: true },
+    [ScoreEvent.SPIN_MINI_QUAD]: { points: 1600, lines: 4, difficult: true },
 };
 
 export class ScoreManager {

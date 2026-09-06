@@ -69,4 +69,18 @@ describe("ScoreManager combo and back-to-back", () => {
 
         expect(manager.getScore()).toBe(11);
     });
+
+    it("scores Mini Spin Triple and Quad as difficult clears", () => {
+        const manager = new ScoreManager();
+
+        manager.addScore(ScoreEvent.SPIN_MINI_TRIPLE);
+        expect(manager.getLastScoreGain()).toBe(800);
+        expect(manager.getTotalLines()).toBe(3);
+        expect(manager.getBackToBackCount()).toBe(1);
+
+        manager.addScore(ScoreEvent.SPIN_MINI_QUAD);
+        expect(manager.getLastScoreGain()).toBe(2450);
+        expect(manager.getTotalLines()).toBe(7);
+        expect(manager.getBackToBackCount()).toBe(2);
+    });
 });
